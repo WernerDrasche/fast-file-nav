@@ -1,0 +1,6 @@
+- to run: ```source run```
+- change pdf-viewer, text-editor etc. inside main.zig by redefining the appropriate constants
+- \<C-h> => ```cd ..```
+- \<C-s> => clears input
+- \<C-q> => exits program
+- \<Enter> => open directory / file
