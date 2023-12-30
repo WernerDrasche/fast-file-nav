@@ -295,80 +295,16 @@ pub fn main() !void {
     try dest.sync();
 }
 
-//test "memleak" {
-//    const allocator = std.testing.allocator;
-//    var ctx = try Context.init(allocator);
-//    defer ctx.deinit();
-//    var dummy_map = NodeMap.init(allocator);
-//    defer dummy_map.deinit();
-//    var dummy_node = Node{ .next = dummy_map, .prev = null, .idx = 0 };
-//    try ctx.open(null);
-//    try ctx.open(&dummy_node);
-//    try ctx.open(null);
-//    dummy_node.idx = 3;
-//    try ctx.open(&dummy_node);
-//}
-
-test "main" {
+test "memleak" {
     const allocator = std.testing.allocator;
-    term.enableRawMode();
-    defer term.disableRawMode();
-    const dest = try std.fs.createFileAbsolute("/tmp/dest", .{});
-    defer dest.close();
-    var input = util.StringUTF8.init(allocator);
-    defer input.deinit();
     var ctx = try Context.init(allocator);
     defer ctx.deinit();
-    next_dir: while (true) {
-        try term.clear(stdout);
-        try ctx.index.print(stdout);
-        input.clear();
-        var current = ctx.index.root;
-        while (true) {
-            const result = util.readCodepointUTF8(stdin) catch continue;
-            const c = result.codepoint;
-            switch (c) {
-                //C-q
-                17 => break :next_dir,
-                //C-s
-                19 => continue :next_dir,
-                //C-h
-                8 => {
-                    try ctx.open(null);
-                    continue :next_dir;
-                },
-                //backspace
-                127 => {
-                    if (current.prev) |prev| {
-                        current = prev;
-                        input.removeLast() catch unreachable;
-                    }
-                },
-                //enter
-                13 => {
-                    if (current.idx != null) {
-                        try ctx.open(current);
-                        continue :next_dir;
-                    }
-                },
-                else => {
-                    if (current.next.get(c)) |node| {
-                        try input.append(result);
-                        current = node;
-                        if (current.next.count() == 0) {
-                            try ctx.open(current);
-                            continue :next_dir;
-                        }
-                        current = try current.skip_to_junction(&input);
-                    }
-                },
-            }
-            try term.deleteLine(stdout);
-            try stdout.writeAll(input.str.items);
-        }
-    }
-    const path = try util.realpathAlloc(allocator, ".");
-    defer allocator.free(path);
-    try dest.writeAll(path);
-    try dest.sync();
+    var dummy_map = NodeMap.init(allocator);
+    defer dummy_map.deinit();
+    var dummy_node = Node{ .next = dummy_map, .prev = null, .idx = 0 };
+    try ctx.open(null);
+    try ctx.open(&dummy_node);
+    try ctx.open(null);
+    dummy_node.idx = 3;
+    try ctx.open(&dummy_node);
 }
