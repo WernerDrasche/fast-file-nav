@@ -1,0 +1,4 @@
+#!/bin/sh
+zig run main.zig 
+dest=$(tr -d '\0' < /tmp/dest)
+cd $dest
